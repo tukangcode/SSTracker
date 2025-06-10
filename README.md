@@ -1,4 +1,4 @@
-# 🛍️ SSTracker – Shopee Spending Tracker
+# 🛍️ SSTracker – Shopee Spending Tracker (English edition)
 
 <div align="center">
   <img src="image/shoope.png" alt="Shopee Screenshot" width="320" />
@@ -9,6 +9,8 @@
 
 
 > A lightweight Tampermonkey script to parse and track your spending on **Shopee Indonesia** (`shopee.co.id`).
+
+- for Indonesia Guide and translation here - [Go to Indonesian Version ↓](#versi-bahasa-indonesia)
 
 ---
 
@@ -75,17 +77,17 @@ MIT License – You're free to redistribute, modify, and share this script.
 
 ---
 
-# 🇮🇩 Versi Bahasa Indonesia
+<h2 id="versi-bahasa-indonesia">🇮🇩 Versi Bahasa Indonesia</h2>
 
 ---
 
 ## 🛍️ SSTracker – Pelacak Pengeluaran Shopee
 
 <div align="center">
-  <img src="images/shoope.png" alt="Shopee Screenshot" width="320" />
+  <img src="image/shoope.png" alt="Shopee Screenshot" width="320" />
 </div>
 <div align="center">
-  <img src="images/indotech.png" alt="IndoTech Subreddit" width="320" />
+  <img src="image/indotech.png" alt="IndoTech Subreddit" width="320" />
 </div>
 > Sebuah skrip sederhana untuk memantau pengeluaran belanja Anda di **Shopee Indonesia** (`shopee.co.id`).
 
@@ -102,7 +104,11 @@ MIT License – You're free to redistribute, modify, and share this script.
 
 > ⚠️ *Skrip ini tidak menyimpan atau mengubah data akun Anda. Semua aktivitas dilakukan secara lokal di peramban.*
 
----
+<div align="center">
+  <img src="image/image1.png" alt="Preview 1 - " width="400" />
+  <img src="image/image2.png" alt="Preview 2 - " width="400" />
+  <img src="image/image3.png" alt="Preview 3 - " width="400" />
+</div>
 
 ## ✅ Manfaat
 
