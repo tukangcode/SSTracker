@@ -56,7 +56,7 @@
 ## 🧰 How to Use
 
 1. 🔧 Install [Tampermonkey](https://www.tampermonkey.net/)  or similar extension  
-2. 📥 Install the script via [Greasy Fork - SSTracker](https://greasyfork.org/scripts/XXXXX-ssttracker-shopee-spending-tracker)   
+2. 📥 Install the script via [Greasy Fork - SSTracker](https://greasyfork.org/en/scripts/538963-shopee-advanced-order-parser-v3-5) or release page.
 3. 🛒 Visit any **Shopee order history page**  
 4. 🖥️ Click **"Parse Orders"** in the top-right floating panel  
 5. 📊 Use buttons to:
@@ -130,7 +130,7 @@ MIT License – You're free to redistribute, modify, and share this script.
 ## 🧰 Cara Penggunaan
 
 1. 🔧 Instal [Tampermonkey](https://www.tampermonkey.net/)  atau ekstensi serupa  
-2. 📥 Instal skrip lewat [Greasy Fork - SSTracker](https://greasyfork.org/scripts/XXXXX-ssttracker-shopee-spending-tracker)   
+2. 📥 Instal skrip lewat [Greasy Fork - SSTracker](https://greasyfork.org/en/scripts/538963-shopee-advanced-order-parser-v3-5)   
 3. 🛒 Kunjungi halaman **riwayat pesanan Shopee**  
 4. 🖥️ Klik tombol **"Parse Orders"** di panel kanan atas  
 5. 📊 Gunakan tombol lainnya untuk:
