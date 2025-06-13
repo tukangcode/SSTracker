@@ -1,9 +1,9 @@
 // ==UserScript==
-// @name         Shopee Advanced Order Parser - v4.0
+// @name         Shopee Advanced Order Parser - v5.0 (Enhanced UI)
 // @namespace    http://tampermonkey.net/
-// @version      1.0
+// @version      5.0
 // @description  Parse shop details, calculate totals, and export data with an enhanced modern interface
-// @author       tukangcode
+// @author       tukangcode (UI Enhanced by AI)
 // @match        https://*shopee.co.id/*
 // @grant        GM_addStyle
 // @grant        GM_setValue
@@ -11,125 +11,130 @@
 // @run-at       document-idle
 // @require      https://cdn.jsdelivr.net/npm/sweetalert2@11.7.5/dist/sweetalert2.all.min.js
 // @require      https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js
-// @license MIT
+// @license      MIT
 // ==/UserScript==
 
 (function () {
     'use strict';
 
-    // Configuration and state management
+    // Configuration and state management from original script
     const config = {
         isVisible: GM_getValue('parserGuiVisible', true),
         autoShow: GM_getValue('parserAutoShow', true),
         useDiscountPrice: GM_getValue('parserUseDiscount', true),
-        darkMode: GM_getValue('parserDarkMode', false),
+        darkMode: GM_getValue('parserDarkMode', window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches),
         history: GM_getValue('parserHistory', [])
     };
 
     let results = [];
     let isProcessing = false;
 
-    // Add styles
+    // Add ENHANCED styles for a modern UI/UX
     GM_addStyle(`
+        :root {
+            --primary-color: #6366f1;
+            --primary-hover: #4f46e5;
+            --danger-color: #ef4444;
+            --danger-hover: #dc2626;
+            --success-color: #22c55e;
+            --success-hover: #16a34a;
+
+            --light-bg: #ffffff;
+            --light-bg-secondary: #f9fafb;
+            --light-border: #e5e7eb;
+            --light-text: #1f2937;
+            --light-text-secondary: #6b7280;
+
+            --dark-bg: #111827;
+            --dark-bg-secondary: #1f2937;
+            --dark-border: #374151;
+            --dark-text: #d1d5db;
+            --dark-text-secondary: #9ca3af;
+        }
+
         #order-parser-ui {
             position: fixed;
             top: 20px;
             right: 20px;
-            width: 600px;
-            background: ${config.darkMode ? '#1a1a1a' : 'white'};
-            color: ${config.darkMode ? '#f0f0f0' : '#1a1a1a'};
-            border-radius: 12px;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+            width: 650px;
+            min-width: 380px;
+            min-height: 250px;
+            background: var(--light-bg);
+            color: var(--light-text);
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1), 0 1px 3px rgba(0,0,0,0.05);
             z-index: 99999;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            padding: 20px;
+            padding: 24px;
             max-height: 90vh;
-            overflow-y: auto;
+            overflow: auto;
             display: ${config.isVisible ? 'block' : 'none'};
-            transition: all 0.3s ease;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            resize: both;
+            border: 1px solid var(--light-border);
         }
 
         #order-parser-ui.dark-mode {
-            background: #222;
-            color: #eee;
+            background: var(--dark-bg);
+            color: var(--dark-text);
+            border-color: var(--dark-border);
         }
 
         #order-parser-ui h2 {
             margin-top: 0;
-            font-size: 1.3rem;
-            color: ${config.darkMode ? '#6366f1' : '#4f46e5'};
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--primary-color);
             display: flex;
             align-items: center;
             justify-content: space-between;
+            cursor: move;
+            user-select: none;
         }
 
         .btn {
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            padding: 8px 16px;
-            margin-right: 10px;
-            margin-bottom: 10px;
-            background: #4f46e5;
+            padding: 10px 18px;
+            margin-right: 12px;
+            margin-bottom: 12px;
+            background-color: var(--primary-color);
             color: white;
             border: none;
             border-radius: 8px;
             cursor: pointer;
-            font-size: 0.9rem;
+            font-size: 0.95rem;
             font-weight: 500;
-            transition: all 0.2s;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
 
-        .btn:hover, .btn:focus {
-            background: #3730a3;
-            transform: translateY(-1px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-            outline: 2px solid #4f46e5;
-            outline-offset: 2px;
+        .btn:hover, .btn:focus-visible {
+            background-color: var(--primary-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            outline: none;
         }
 
         .btn:active {
             transform: translateY(0px);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
 
-        .btn:focus:not(:focus-visible) {
-            outline: none;
-        }
-
-        .btn:focus-visible {
-            outline: 2px solid #4f46e5;
-            outline-offset: 2px;
-        }
-
-        .btn.disabled {
-            background: #999;
+        .btn.disabled, .btn:disabled {
+            background: #9ca3af;
             cursor: not-allowed;
-            opacity: 0.7;
+            opacity: 0.6;
             box-shadow: none;
-        }
-
-        .btn.disabled:hover {
             transform: none;
-            box-shadow: none;
-            outline: none;
         }
 
-        .btn.btn-danger {
-            background: #dc2626;
-        }
-
-        .btn.btn-danger:hover {
-            background: #b91c1c;
-        }
-
-        .btn.btn-success {
-            background: #10b981;
-        }
-
-        .btn.btn-success:hover {
-            background: #059669;
-        }
+        .btn.btn-danger { background: var(--danger-color); }
+        .btn.btn-danger:hover { background: var(--danger-hover); }
+        .btn.btn-success { background: var(--success-color); }
+        .btn.btn-success:hover { background: var(--success-hover); }
 
         .btn-group {
             display: flex;
@@ -137,95 +142,75 @@
             margin-bottom: 15px;
         }
 
-        .tab-content {
-            display: none;
-        }
-
-        .tab-content.active {
-            display: block;
-            animation: fadeIn 0.3s;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
         .tabs {
             display: flex;
-            margin-bottom: 15px;
-            border-bottom: 1px solid ${config.darkMode ? '#444' : '#e5e7eb'};
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--light-border);
         }
+        #order-parser-ui.dark-mode .tabs { border-color: var(--dark-border); }
 
         .tab {
-            padding: 8px 16px;
+            padding: 10px 18px;
             cursor: pointer;
-            border-bottom: 2px solid transparent;
+            border-bottom: 3px solid transparent;
             transition: all 0.2s;
             position: relative;
-        }
-
-        .tab:hover, .tab:focus {
-            color: #4f46e5;
-            outline: none;
-        }
-
-        .tab:focus-visible {
-            outline: 2px solid #4f46e5;
-            outline-offset: 2px;
-        }
-
-        .tab.active {
-            border-bottom: 2px solid #4f46e5;
-            color: #4f46e5;
+            color: var(--light-text-secondary);
             font-weight: 500;
         }
+        #order-parser-ui.dark-mode .tab { color: var(--dark-text-secondary); }
+
+        .tab:hover, .tab.active { color: var(--primary-color); }
+        .tab.active { border-bottom-color: var(--primary-color); }
+
+        .tab-content { display: none; }
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.5s;
+        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
         table {
             width: 100%;
             border-collapse: separate;
             border-spacing: 0;
-            margin-top: 10px;
+            margin-top: 15px;
             font-size: 0.9rem;
-            border-radius: 8px;
+            border-radius: 12px;
             overflow: hidden;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            border: 1px solid var(--light-border);
         }
+        #order-parser-ui.dark-mode table { border-color: var(--dark-border); }
 
         th {
-            background: ${config.darkMode ? '#2a2a2a' : '#f3f4f6'};
+            background: var(--light-bg-secondary);
             text-align: left;
-            padding: 12px 15px;
+            padding: 14px 16px;
             font-weight: 600;
-            color: ${config.darkMode ? '#f0f0f0' : '#1a1a1a'};
+            color: var(--light-text);
             position: sticky;
             top: 0;
             cursor: pointer;
-            border-bottom: 2px solid ${config.darkMode ? '#444' : '#e5e7eb'};
+            border-bottom: 1px solid var(--light-border);
         }
-
-        th:hover, th:focus {
-            background: ${config.darkMode ? '#444' : '#e5e7eb'};
+        #order-parser-ui.dark-mode th {
+            background: var(--dark-bg-secondary);
+            color: var(--dark-text);
+            border-color: var(--dark-border);
         }
-
-        th:focus {
-            outline: 2px solid #4f46e5;
-            outline-offset: -2px;
-        }
+        th:hover { background: #f3f4f6; }
+        #order-parser-ui.dark-mode th:hover { background: #374151; }
 
         td {
-            padding: 12px 15px;
-            border-bottom: 1px solid ${config.darkMode ? '#333' : '#e5e7eb'};
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--light-border);
             vertical-align: top;
         }
-
-        tr:last-child td {
-            border-bottom: none;
-        }
-
-        tr:hover td {
-            background: ${config.darkMode ? '#2a2a2a' : '#f9fafb'};
-        }
+        #order-parser-ui.dark-mode td { border-color: var(--dark-border); }
+        tr:last-child td { border-bottom: none; }
+        tr:hover td { background: var(--light-bg-secondary); }
+        #order-parser-ui.dark-mode tr:hover td { background: var(--dark-bg-secondary); }
 
         .truncate {
             max-width: 200px;
@@ -236,248 +221,220 @@
         }
 
         pre {
-            margin-top: 10px;
-            background: ${config.darkMode ? '#333' : '#f5f5f5'};
+            margin-top: 15px;
+            background: #f3f4f6;
             padding: 15px;
             border-radius: 8px;
             overflow-x: auto;
-            color: ${config.darkMode ? '#eee' : 'inherit'};
+            color: #1f2937;
+            border: 1px solid #e5e7eb;
+        }
+        #order-parser-ui.dark-mode pre {
+            background: var(--dark-bg-secondary);
+            color: var(--dark-text);
+            border-color: var(--dark-border);
         }
 
         .setting-group {
-            margin: 15px 0;
-            padding: 15px;
-            background: ${config.darkMode ? '#333' : '#f9fafb'};
-            border-radius: 8px;
+            margin: 20px 0;
+            padding: 20px;
+            background: var(--light-bg-secondary);
+            border-radius: 12px;
+            border: 1px solid var(--light-border);
         }
+        #order-parser-ui.dark-mode .setting-group {
+            background: var(--dark-bg-secondary);
+            border-color: var(--dark-border);
+        }
+        .setting-group h3 { margin-top: 0; color: #4b5563; }
+        #order-parser-ui.dark-mode .setting-group h3 { color: #9ca3af; }
 
         .setting-label {
             display: flex;
             align-items: center;
-            margin: 10px 0;
+            margin: 15px 0;
             font-size: 1rem;
-            color: ${config.darkMode ? '#f0f0f0' : '#1a1a1a'};
         }
 
         .switch {
-            position: relative;
-            display: inline-block;
-            width: 44px;
-            height: 22px;
-            margin-right: 10px;
+            position: relative; display: inline-block;
+            width: 44px; height: 22px; margin-right: 12px;
         }
-
-        .switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-
+        .switch input { opacity: 0; width: 0; height: 0; }
         .slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
+            position: absolute; cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
             background-color: #ccc;
-            transition: .3s;
-            border-radius: 22px;
+            transition: .3s; border-radius: 22px;
         }
-
         .slider:before {
-            position: absolute;
-            content: "";
-            height: 18px;
-            width: 18px;
-            left: 3px;
-            bottom: 2px;
+            position: absolute; content: "";
+            height: 18px; width: 18px;
+            left: 3px; bottom: 2px;
             background-color: white;
-            transition: .3s;
-            border-radius: 50%;
+            transition: .3s; border-radius: 50%;
         }
-
-        input:checked + .slider {
-            background-color: #4f46e5;
-        }
-
-        input:focus + .slider {
-            box-shadow: 0 0 1px #4f46e5;
-        }
-
-        input:checked + .slider:before {
-            transform: translateX(20px);
-        }
+        input:checked + .slider { background-color: var(--primary-color); }
+        input:focus + .slider { box-shadow: 0 0 1px var(--primary-color); }
+        input:checked + .slider:before { transform: translateX(20px); }
 
         textarea {
-            width: 100%;
+            width: calc(100% - 22px);
             height: 150px;
             margin-top: 10px;
-            font-family: monospace;
+            font-family: "Fira Code", monospace;
             font-size: 0.9rem;
             padding: 10px;
-            border: 1px solid ${config.darkMode ? '#444' : '#ccc'};
+            border: 1px solid #d1d5db;
             border-radius: 8px;
             resize: vertical;
-            white-space: pre-wrap;
-            background: ${config.darkMode ? '#333' : 'white'};
-            color: ${config.darkMode ? '#eee' : 'inherit'};
+            background: var(--light-bg);
+            color: var(--light-text);
         }
-
-        .badge {
-            display: inline-block;
-            padding: 3px 8px;
-            border-radius: 12px;
-            font-size: 0.75rem;
-            font-weight: 500;
-            background: #4f46e5;
-            color: white;
+        #order-parser-ui.dark-mode textarea {
+            background: var(--dark-bg-secondary);
+            color: var(--dark-text);
+            border-color: #4b5563;
         }
 
         .empty-state {
-            padding: 30px;
-            text-align: center;
-            color: #6b7280;
+            padding: 40px; text-align: center;
+            color: var(--light-text-secondary); border: 2px dashed var(--light-border);
+            border-radius: 12px; margin-top: 15px;
         }
-
+        #order-parser-ui.dark-mode .empty-state { color: var(--dark-text-secondary); border-color: var(--dark-border); }
         .empty-state i {
-            font-size: 3rem;
-            margin-bottom: 15px;
+            font-size: 3rem; margin-bottom: 15px;
             color: #d1d5db;
         }
+        #order-parser-ui.dark-mode .empty-state i { color: #4b5563; }
 
         .search-box {
-            width: 100%;
-            padding: 10px 15px;
-            border: 2px solid ${config.darkMode ? '#444' : '#e5e7eb'};
+            width: calc(100% - 34px);
+            padding: 12px 16px;
+            border: 1px solid #d1d5db;
             border-radius: 8px;
             margin-bottom: 15px;
-            background: ${config.darkMode ? '#2a2a2a' : 'white'};
-            color: ${config.darkMode ? '#f0f0f0' : '#1a1a1a'};
+            background: var(--light-bg);
+            color: var(--light-text);
             font-size: 1rem;
             transition: all 0.2s;
         }
-
+        #order-parser-ui.dark-mode .search-box {
+            background: var(--dark-bg-secondary);
+            color: var(--dark-text);
+            border-color: #4b5563;
+        }
         .search-box:focus {
             outline: none;
-            border-color: #4f46e5;
-            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
         }
-
-        .search-box::placeholder {
-            color: ${config.darkMode ? '#888' : '#9ca3af'};
-        }
+        #order-parser-ui.dark-mode .search-box:focus { box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.2); }
+        .search-box::placeholder { color: #9ca3af; }
+        #order-parser-ui.dark-mode .search-box::placeholder { color: #6b7280; }
 
         .history-item {
-            padding: 12px;
-            margin-bottom: 10px;
-            border-radius: 8px;
-            background: ${config.darkMode ? '#333' : '#f9fafb'};
+            padding: 16px; margin-bottom: 10px;
+            border-radius: 12px;
+            background: var(--light-bg-secondary);
+            border: 1px solid var(--light-border);
             cursor: pointer;
             transition: all 0.2s;
         }
-
+        #order-parser-ui.dark-mode .history-item { background: var(--dark-bg-secondary); border-color: var(--dark-border); }
         .history-item:hover {
-            background: ${config.darkMode ? '#444' : '#e5e7eb'};
+            background: #f3f4f6;
+            transform: translateY(-2px);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
         }
-
+        #order-parser-ui.dark-mode .history-item:hover {
+            background: #374151;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
         .history-date {
             font-size: 0.8rem;
-            color: #6b7280;
-            margin-bottom: 5px;
+            color: var(--light-text-secondary);
+            margin-bottom: 8px;
         }
+        #order-parser-ui.dark-mode .history-date { color: var(--dark-text-secondary); }
 
         .loading {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.7);
-            backdrop-filter: blur(4px);
+            position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(5px);
+            display: flex; align-items: center; justify-content: center;
+            border-radius: 16px;
+            z-index: 100000;
+        }
+        #order-parser-ui.dark-mode .loading {
+            background: rgba(17, 24, 39, 0.7);
+        }
+        .spinner {
+            width: 48px; height: 48px;
+            border-radius: 50%;
+            border: 4px solid rgba(99, 102, 241, 0.2);
+            border-top-color: var(--primary-color);
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .tooltip { position: relative; display: inline-block; margin-left: 5px; }
+        .tooltip .tooltip-text {
+            visibility: hidden; width: 220px;
+            background-color: #1f2937;
+            color: #ffffff;
+            text-align: center; border-radius: 8px;
+            padding: 10px; position: absolute;
+            z-index: 1; bottom: 130%; left: 50%;
+            transform: translateX(-50%);
+            opacity: 0; transition: opacity 0.3s;
+            font-size: 0.9rem; box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+        .tooltip:hover .tooltip-text, .tooltip:focus .tooltip-text {
+            visibility: visible; opacity: 1;
+        }
+
+        .sr-only {
+            position: absolute; width: 1px; height: 1px;
+            padding: 0; margin: -1px; overflow: hidden;
+            clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+        }
+
+        .sort-helper-text {
+            font-size: 0.85rem; color: var(--light-text-secondary);
+            margin-bottom: 8px; margin-top: -7px; padding-left: 4px;
+        }
+        #order-parser-ui.dark-mode .sort-helper-text { color: var(--dark-text-secondary); }
+
+        .header-controls button {
+            background: transparent;
+            border: none;
+            color: #9ca3af;
+            font-size: 1.2rem;
+            padding: 5px;
+            border-radius: 6px;
+            width: 32px;
+            height: 32px;
             display: flex;
             align-items: center;
             justify-content: center;
-            border-radius: 12px;
-            z-index: 100000;
+            transition: background-color 0.2s, color 0.2s;
         }
-
-        .spinner {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            border: 3px solid rgba(255, 255, 255, 0.3);
-            border-top-color: white;
-            animation: spin 1s linear infinite;
+        .header-controls button:hover {
+            background-color: #f3f4f6;
+            color: var(--primary-color);
         }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        #drag-handle {
-            cursor: move;
-            padding: 0 5px;
+        #order-parser-ui.dark-mode .header-controls button {
             color: #6b7280;
         }
-
-        .tooltip {
-            position: relative;
-            display: inline-block;
-            margin-left: 5px;
-        }
-
-        .tooltip .tooltip-text {
-            visibility: hidden;
-            width: 200px;
-            background-color: ${config.darkMode ? '#2a2a2a' : '#1a1a1a'};
-            color: ${config.darkMode ? '#f0f0f0' : 'white'};
-            text-align: center;
-            border-radius: 6px;
-            padding: 8px;
-            position: absolute;
-            z-index: 1;
-            bottom: 125%;
-            left: 50%;
-            transform: translateX(-50%);
-            opacity: 0;
-            transition: opacity 0.3s;
-            font-size: 0.9rem;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-        }
-
-        .tooltip:hover .tooltip-text,
-        .tooltip:focus .tooltip-text {
-            visibility: visible;
-            opacity: 1;
-        }
-
-        /* Accessibility improvements */
-        .sr-only {
-            position: absolute;
-            width: 1px;
-            height: 1px;
-            padding: 0;
-            margin: -1px;
-            overflow: hidden;
-            clip: rect(0, 0, 0, 0);
-            white-space: nowrap;
-            border: 0;
-        }
-
-        [role="button"],
-        [role="tab"] {
-            cursor: pointer;
-        }
-
-        [role="button"]:focus,
-        [role="tab"]:focus {
-            outline: 2px solid #4f46e5;
-            outline-offset: 2px;
+        #order-parser-ui.dark-mode .header-controls button:hover {
+            background-color: #374151;
+            color: var(--primary-color);
         }
     `);
 
-    // Create UI
+    // Create UI with enhanced structure
     const container = document.createElement('div');
     container.innerHTML = `
         <div id="order-parser-ui" class="${config.darkMode ? 'dark-mode' : ''}" role="dialog" aria-label="Shopee Order Parser">
@@ -486,15 +443,12 @@
             </div>
 
             <h2>
-                <div>
-                    <span id="drag-handle" role="button" aria-label="Drag to move">⋮⋮</span>
-                    Shopee Order Parser
-                </div>
-                <div>
-                    <button id="theme-toggle" class="btn" style="margin-right: 5px; padding: 5px 10px;" aria-label="Toggle dark mode">
-                        <i class="fa ${config.darkMode ? 'fa-sun' : 'fa-moon'}"></i>
+                <span>Shopee Order Parser</span>
+                <div class="header-controls">
+                    <button id="theme-toggle" class="btn-icon" aria-label="Toggle dark mode">
+                        <i class="fas ${config.darkMode ? 'fa-sun' : 'fa-moon'}"></i>
                     </button>
-                    <button id="close-btn" class="btn" style="margin-right: 0; padding: 5px 10px;" aria-label="Close parser">×</button>
+                    <button id="close-btn" class="btn-icon" aria-label="Close parser">×</button>
                 </div>
             </h2>
 
@@ -507,36 +461,35 @@
             <div id="parser-tab" class="tab-content active" role="tabpanel" aria-labelledby="parser-tab">
                 <div class="btn-group">
                     <button class="btn" id="parse-btn" aria-label="Parse orders">
-                        <i class="fa fa-search" aria-hidden="true"></i> Parse Orders
+                        <i class="fas fa-search" aria-hidden="true" style="margin-right: 8px;"></i> Parse Orders
                     </button>
-                    <button class="btn disabled" id="calc-btn" disabled aria-label="Calculate total">
-                        <i class="fa fa-calculator" aria-hidden="true"></i> Calculate Total
+                    <button class="btn" id="calc-btn" disabled aria-label="Calculate total">
+                        <i class="fas fa-calculator" aria-hidden="true" style="margin-right: 8px;"></i> Calculate Total
                     </button>
-                    <button class="btn btn-danger disabled" id="clean-btn" disabled aria-label="Clear results">
-                        <i class="fa fa-trash" aria-hidden="true"></i> Clear
+                    <button class="btn btn-danger" id="clean-btn" disabled aria-label="Clear results">
+                        <i class="fas fa-trash" aria-hidden="true" style="margin-right: 8px;"></i> Clear
                     </button>
                 </div>
 
                 <div class="btn-group">
-                    <button class="btn btn-success disabled" id="export-md-btn" disabled aria-label="Export as Markdown">
-                        <i class="fa fa-file-text" aria-hidden="true"></i> Export in Markdown
+                     <button class="btn btn-success" id="export-md-btn" disabled aria-label="Export as Markdown">
+                        <i class="fab fa-markdown" aria-hidden="true" style="margin-right: 8px;"></i> Export Markdown
                     </button>
-                    <button class="btn btn-success disabled" id="export-csv-btn" disabled aria-label="Export as CSV">
-                        <i class="fa fa-file-excel" aria-hidden="true"></i> Export CSV
+                    <button class="btn btn-success" id="export-csv-btn" disabled aria-label="Export as CSV">
+                        <i class="fas fa-file-csv" aria-hidden="true" style="margin-right: 8px;"></i> Export CSV
                     </button>
-                    <button class="btn btn-success disabled" id="save-btn" disabled aria-label="Save to history">
-                        <i class="fa fa-save" aria-hidden="true"></i> Save to History
+                    <button class="btn" id="save-btn" disabled aria-label="Save to history" style="background-color: #8b5cf6;"><i class="fas fa-save" aria-hidden="true" style="margin-right: 8px;"></i> Save to History
                     </button>
                 </div>
 
                 <input type="text" id="search-box" class="search-box" placeholder="Search orders..." style="display: none;" aria-label="Search orders">
+                <div class="sort-helper-text" style="display: none;">Click table headers to sort.</div>
 
                 <div id="results-container">
                     <div id="empty-state" class="empty-state">
-                        <i class="fa fa-receipt" aria-hidden="true"></i>
-                        <p>No orders parsed yet. Click "Parse Orders" to start.</p>
+                        <i class="fas fa-receipt" aria-hidden="true"></i>
+                        <p>No orders parsed yet. Click "Parse Orders" to begin.</p>
                     </div>
-
                     <table id="result-table" style="display: none;" role="grid">
                         <thead>
                             <tr>
@@ -551,7 +504,6 @@
                 </div>
 
                 <pre id="grand-total" style="display:none;" role="status" aria-live="polite"></pre>
-
                 <div style="margin-top: 20px;">
                     <h3>Raw Parsed Output</h3>
                     <textarea id="raw-output" readonly placeholder="Parsed shop name, item, and total will appear here..." aria-label="Raw parsed output"></textarea>
@@ -559,68 +511,49 @@
             </div>
 
             <div id="history-tab" class="tab-content" role="tabpanel" aria-labelledby="history-tab">
-                <div id="history-list">
-                    <div class="empty-state">
-                        <i class="fa fa-history" aria-hidden="true"></i>
-                        <p>No saved order history yet.</p>
-                    </div>
-                </div>
+                <div id="history-list"></div>
             </div>
 
             <div id="settings-tab" class="tab-content" role="tabpanel" aria-labelledby="settings-tab">
                 <div class="setting-group">
                     <h3>Display Settings</h3>
-
                     <label class="setting-label">
-                        <span class="switch">
-                            <input type="checkbox" id="auto-show-toggle" ${config.autoShow ? 'checked' : ''} aria-label="Show GUI automatically on page load">
-                            <span class="slider"></span>
-                        </span>
-                        Show GUI Automatically on Page Load
+                        <span class="switch"><input type="checkbox" id="auto-show-toggle" ${config.autoShow ? 'checked' : ''}><span class="slider"></span></span>
+                        Show GUI Automatically
                     </label>
-
                     <label class="setting-label">
-                        <span class="switch">
-                            <input type="checkbox" id="dark-mode-toggle" ${config.darkMode ? 'checked' : ''} aria-label="Enable dark mode">
-                            <span class="slider"></span>
-                        </span>
+                        <span class="switch"><input type="checkbox" id="dark-mode-toggle" ${config.darkMode ? 'checked' : ''}><span class="slider"></span></span>
                         Dark Mode
                     </label>
                 </div>
-
                 <div class="setting-group">
                     <h3>Parser Settings</h3>
-
                     <label class="setting-label">
-                        <span class="switch">
-                            <input type="checkbox" id="use-discount-toggle" ${config.useDiscountPrice ? 'checked' : ''} aria-label="Use discounted price if available">
-                            <span class="slider"></span>
-                        </span>
-                        Use Discounted Price if Available
+                        <span class="switch"><input type="checkbox" id="use-discount-toggle" ${config.useDiscountPrice ? 'checked' : ''}><span class="slider"></span></span>
+                        Use Discounted Price
                         <div class="tooltip" role="tooltip" tabindex="0">
-                            <span class="sr-only">Help</span>?
+                            <i class="fas fa-question-circle" style="margin-left: 8px; color: #9ca3af;"></i>
                             <span class="tooltip-text">When enabled, the parser will use the discounted price instead of the original price if available.</span>
                         </div>
                     </label>
                 </div>
-
                 <div class="setting-group">
                     <h3>Keyboard Shortcuts</h3>
-                    <p><kbd>Ctrl+M</kbd> - Toggle parser visibility</p>
-                    <p><kbd>Esc</kbd> - Hide parser</p>
+                    <p><kbd style="background: #e5e7eb; padding: 2px 6px; border-radius: 4px; border: 1px solid #d1d5db;">Ctrl</kbd> + <kbd style="background: #e5e7eb; padding: 2px 6px; border-radius: 4px; border: 1px solid #d1d5db;">M</kbd> - Toggle parser</p>
+                    <p><kbd style="background: #e5e7eb; padding: 2px 6px; border-radius: 4px; border: 1px solid #d1d5db;">Esc</kbd> - Hide parser</p>
                 </div>
             </div>
         </div>
     `;
     document.body.appendChild(container);
 
-    // Add Font Awesome for icons
+    // Add Font Awesome
     const fontAwesome = document.createElement('link');
     fontAwesome.rel = 'stylesheet';
-    fontAwesome.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css';
+    fontAwesome.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css';
     document.head.appendChild(fontAwesome);
 
-    // DOM References
+    // DOM References from original script
     const parserUI = document.getElementById('order-parser-ui');
     const parseBtn = document.getElementById('parse-btn');
     const calcBtn = document.getElementById('calc-btn');
@@ -639,24 +572,52 @@
     const darkModeToggle = document.getElementById('dark-mode-toggle');
     const rawOutput = document.getElementById('raw-output');
     const searchBox = document.getElementById('search-box');
+    const sortHelper = document.querySelector('.sort-helper-text');
     const loadingOverlay = document.getElementById('loading-overlay');
     const historyList = document.getElementById('history-list');
     const tabs = document.querySelectorAll('.tab');
     const tabContents = document.querySelectorAll('.tab-content');
 
-    // Make the parser draggable
-    Sortable.create(parserUI, {
-        handle: '#drag-handle',
-        animation: 150
-    });
+    // Draggable functionality from original script
+    (function makeDraggable() {
+        const panel = parserUI;
+        const header = parserUI.querySelector('h2');
+        let isDragging = false, offsetX = 0, offsetY = 0;
 
-    // Tab functionality
+        header.addEventListener('mousedown', function (e) {
+            if (e.target.closest('button')) return;
+            isDragging = true;
+            const rect = panel.getBoundingClientRect();
+            offsetX = e.clientX - rect.left;
+            offsetY = e.clientY - rect.top;
+            document.body.style.userSelect = 'none';
+        });
+        document.addEventListener('mousemove', function (e) {
+            if (!isDragging) return;
+            let x = e.clientX - offsetX;
+            let y = e.clientY - offsetY;
+            x = Math.max(0, Math.min(window.innerWidth - panel.offsetWidth, x));
+            y = Math.max(0, Math.min(window.innerHeight - panel.offsetHeight, y));
+            panel.style.left = x + 'px';
+            panel.style.top = y + 'px';
+            panel.style.right = 'auto';
+        });
+        document.addEventListener('mouseup', function () {
+            isDragging = false;
+            document.body.style.userSelect = '';
+        });
+    })();
+
+    // Tab functionality from original script
     tabs.forEach(tab => {
         tab.addEventListener('click', () => {
-            tabs.forEach(t => t.classList.remove('active'));
+            tabs.forEach(t => { t.classList.remove('active'); t.setAttribute('aria-selected', 'false'); });
             tabContents.forEach(c => c.classList.remove('active'));
             tab.classList.add('active');
-            document.getElementById(`${tab.dataset.tab}-tab`).classList.add('active');
+            tab.setAttribute('aria-selected', 'true');
+            const activeTabContent = document.getElementById(`${tab.dataset.tab}-tab`);
+            activeTabContent.classList.add('active');
+            activeTabContent.setAttribute('aria-hidden', 'false');
 
             if (tab.dataset.tab === 'history') {
                 renderHistory();
@@ -664,33 +625,46 @@
         });
     });
 
-    // Theme toggle
+    // Theme toggle functionality
+    function applyTheme() {
+        parserUI.classList.toggle('dark-mode', config.darkMode);
+        themeToggle.innerHTML = `<i class="fas ${config.darkMode ? 'fa-sun' : 'fa-moon'}"></i>`;
+        GM_setValue('parserDarkMode', config.darkMode);
+    }
     themeToggle.addEventListener('click', () => {
         config.darkMode = !config.darkMode;
-        GM_setValue('parserDarkMode', config.darkMode);
-
-        parserUI.classList.toggle('dark-mode');
-        themeToggle.innerHTML = `<i class="fa ${config.darkMode ? 'fa-sun' : 'fa-moon'}"></i>`;
+        applyTheme();
     });
 
-    // Close button
     closeBtn.addEventListener('click', toggleGUI);
 
-    // Sort functionality
-    const tableHeaders = resultTable.querySelectorAll('th');
-    tableHeaders.forEach(header => {
+    // Sort functionality from original script
+    let sortState = { key: 'index', order: 'asc' };
+    resultTable.querySelectorAll('th').forEach(header => {
         header.addEventListener('click', () => {
             const sortKey = header.dataset.sort;
-            sortResults(sortKey);
+            sortState.order = (sortState.key === sortKey && sortState.order === 'asc') ? 'desc' : 'asc';
+            sortState.key = sortKey;
+            sortResults();
+            updateSortIndicators();
         });
     });
 
-    // Search functionality
+    function updateSortIndicators() {
+        resultTable.querySelectorAll('th').forEach(th => {
+            th.innerHTML = th.innerHTML.replace(/ <i.*<\/i>$/, '');
+            if (th.dataset.sort === sortState.key) {
+                th.innerHTML += ` <i class="fas fa-sort-${sortState.order === 'asc' ? 'up' : 'down'}"></i>`;
+            }
+        });
+    }
+
+    // Search functionality from original script
     searchBox.addEventListener('input', () => {
         filterResults(searchBox.value.trim().toLowerCase());
     });
 
-    // Settings
+    // Settings functionality from original script
     useDiscountToggle.addEventListener('change', function () {
         config.useDiscountPrice = this.checked;
         GM_setValue('parserUseDiscount', config.useDiscountPrice);
@@ -703,63 +677,34 @@
 
     darkModeToggle.addEventListener('change', function () {
         config.darkMode = this.checked;
-        GM_setValue('parserDarkMode', config.darkMode);
-
-        parserUI.classList.toggle('dark-mode');
-        themeToggle.innerHTML = `<i class="fa ${config.darkMode ? 'fa-sun' : 'fa-moon'}"></i>`;
+        applyTheme();
     });
 
-    // Helper functions
+    // Helper functions from original script
     function toggleGUI() {
         config.isVisible = !config.isVisible;
         parserUI.style.display = config.isVisible ? 'block' : 'none';
         GM_setValue('parserGuiVisible', config.isVisible);
     }
 
-    function showLoading() {
-        isProcessing = true;
-        loadingOverlay.style.display = 'flex';
-    }
-
-    function hideLoading() {
-        isProcessing = false;
-        loadingOverlay.style.display = 'none';
-    }
-
-    function enableButton(btn) {
-        btn.disabled = false;
-        btn.classList.remove('disabled');
-    }
-
-    function disableButton(btn) {
-        btn.disabled = true;
-        btn.classList.add('disabled');
+    function showLoading(show) {
+        isProcessing = show;
+        loadingOverlay.style.display = show ? 'flex' : 'none';
     }
 
     function updateButtonStates(hasResults) {
-        if (hasResults) {
-            enableButton(calcBtn);
-            enableButton(exportMdBtn);
-            enableButton(exportCsvBtn);
-            enableButton(cleanBtn);
-            enableButton(saveBtn);
-            disableButton(parseBtn);
-            searchBox.style.display = 'block';
-        } else {
-            disableButton(calcBtn);
-            disableButton(exportMdBtn);
-            disableButton(exportCsvBtn);
-            disableButton(cleanBtn);
-            disableButton(saveBtn);
-            enableButton(parseBtn);
-            searchBox.style.display = 'none';
-        }
+        const buttonsToToggle = [calcBtn, exportMdBtn, exportCsvBtn, cleanBtn, saveBtn];
+        buttonsToToggle.forEach(btn => {
+            btn.disabled = !hasResults;
+        });
+        parseBtn.disabled = hasResults;
+        searchBox.style.display = hasResults ? 'block' : 'none';
+        sortHelper.style.display = hasResults ? 'block' : 'none';
     }
 
+    // Core parsing logic from original script
     function parseAllOrders() {
-        showLoading();
-
-        // Use setTimeout to prevent UI freezing
+        showLoading(true);
         setTimeout(() => {
             try {
                 const allElements = Array.from(document.querySelectorAll('.UDaMW3, .DWVWOJ, .ylYzwa'));
@@ -827,17 +772,14 @@
                 }
             } catch (error) {
                 console.error('Error parsing orders:', error);
-                Swal.fire({
-                    title: 'Error',
-                    text: 'An error occurred while parsing orders.',
-                    icon: 'error'
-                });
+                Swal.fire({ title: 'Error', text: 'An error occurred while parsing orders.', icon: 'error' });
             } finally {
-                hideLoading();
+                showLoading(false);
             }
         }, 100);
     }
 
+    // UI and data handling functions from original script
     function updateUI() {
         if (results.length === 0) {
             emptyState.style.display = 'block';
@@ -850,95 +792,77 @@
         tableBody.innerHTML = '';
 
         results.forEach((item, i) => {
-            const row = document.createElement('tr');
+            const row = tableBody.insertRow();
             row.dataset.index = i;
 
-            const cellShop = document.createElement('td');
-            cellShop.className = 'truncate';
-            cellShop.title = item.shopName;
-            cellShop.textContent = item.shopName;
+            const displayPrice = item.totalOrder > 0 ? `Rp${item.totalOrder.toLocaleString('id-ID')}` : 'N/A';
 
-            const cellItem = document.createElement('td');
-            cellItem.className = 'truncate';
-            cellItem.title = item.itemName;
-            cellItem.textContent = item.itemName;
-
-            const displayPrice = item.totalOrder > 0
-                ? `Rp${item.totalOrder.toLocaleString()}`
-                : 'Price not found';
-
-            row.innerHTML = `<td>${i + 1}</td>`;
-            row.appendChild(cellShop);
-            row.appendChild(cellItem);
-            row.innerHTML += `<td>${displayPrice}</td>`;
-            tableBody.appendChild(row);
+            row.innerHTML = `
+                <td>${i + 1}</td>
+                <td class="truncate" title="${item.shopName}">${item.shopName}</td>
+                <td class="truncate" title="${item.itemName}">${item.itemName}</td>
+                <td>${displayPrice}</td>
+            `;
         });
     }
 
-    function sortResults(key) {
-        switch (key) {
-            case 'index':
-                // No sorting needed, default order
-                break;
-            case 'shop':
-                results.sort((a, b) => a.shopName.localeCompare(b.shopName));
-                break;
-            case 'item':
-                results.sort((a, b) => a.itemName.localeCompare(b.itemName));
-                break;
-            case 'price':
-                results.sort((a, b) => b.totalOrder - a.totalOrder);
-                break;
-        }
+    function sortResults() {
+        const { key, order } = sortState;
+        const modifier = order === 'asc' ? 1 : -1;
 
+        const sortable = [...results].map((item, index) => ({...item, originalIndex: index}));
+
+        if (key === 'index') {
+            sortable.sort((a,b) => (a.originalIndex - b.originalIndex) * modifier);
+        } else {
+            sortable.sort((a, b) => {
+                const valA = a[key];
+                const valB = b[key];
+
+                if (typeof valA === 'string') {
+                    return valA.localeCompare(valB) * modifier;
+                }
+                if (typeof valA === 'number') {
+                    return (valA - valB) * modifier;
+                }
+                return 0;
+            });
+        }
+        results = sortable;
         updateUI();
     }
 
     function filterResults(query) {
         if (!query) {
-            Array.from(tableBody.rows).forEach(row => {
-                row.style.display = '';
-            });
+            Array.from(tableBody.rows).forEach(row => row.style.display = '');
             return;
         }
-
         Array.from(tableBody.rows).forEach(row => {
-            const index = parseInt(row.dataset.index);
-            const item = results[index];
-
-            if (item.shopName.toLowerCase().includes(query) ||
-                item.itemName.toLowerCase().includes(query) ||
-                `Rp${item.totalOrder.toLocaleString()}`.includes(query)) {
-                row.style.display = '';
-            } else {
-                row.style.display = 'none';
-            }
+            const item = results[parseInt(row.dataset.index)];
+            const match = item.shopName.toLowerCase().includes(query) ||
+                          item.itemName.toLowerCase().includes(query);
+            row.style.display = match ? '' : 'none';
         });
     }
 
     function updateRawOutput() {
-        let output = '';
-        results.forEach(item => {
-            output += `${item.shopName}\n`;
-            output += `${item.itemName}\n`;
-            output += `Rp${item.totalOrder.toLocaleString()}\n\n`;
-        });
-        rawOutput.value = output.trim();
+        rawOutput.value = results.map(item =>
+            `${item.shopName}\n${item.itemName}\nRp${item.totalOrder.toLocaleString('id-ID')}`
+        ).join('\n\n');
     }
 
     function calculateGrandTotal() {
         const total = results.reduce((sum, item) => sum + item.totalOrder, 0);
         grandTotalEl.style.display = 'block';
         grandTotalEl.innerHTML = `
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-                <h3>Grand Total</h3>
-                <span style="font-size: 1.2rem; font-weight: bold; color: #4f46e5;">Rp${total.toLocaleString()}</span>
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px;">
+                <h3 style="margin: 0; font-size: 1.2rem;">Grand Total</h3>
+                <span style="font-size: 1.4rem; font-weight: bold; color: var(--primary-color);">Rp${total.toLocaleString('id-ID')}</span>
             </div>
         `;
-
         Swal.fire({
             title: 'Total Calculated',
-            html: `<h3>Grand Total: <span style="color: #4f46e5;">Rp${total.toLocaleString()}</span></h3>`,
+            html: `<h3 style="font-weight: 500;">Grand Total: <span style="color: var(--primary-color); font-weight: 700;">Rp${total.toLocaleString('id-ID')}</span></h3>`,
             icon: 'info'
         });
     }
@@ -946,194 +870,129 @@
     function cleanResults() {
         Swal.fire({
             title: 'Are you sure?',
-            text: "This will clear all parsed data.",
+            text: "This will clear all parsed data from the current session.",
             icon: 'warning',
             showCancelButton: true,
-            confirmButtonColor: '#3085d6',
-            cancelButtonColor: '#d33',
+            confirmButtonColor: '#ef4444',
+            cancelButtonColor: '#6b7280',
             confirmButtonText: 'Yes, clear it!'
         }).then((result) => {
             if (result.isConfirmed) {
-                // Clear data
                 results = [];
-
-                // Clear UI
                 updateUI();
                 grandTotalEl.style.display = 'none';
                 rawOutput.value = '';
-
-                // Reset buttons
                 updateButtonStates(false);
-
-                Swal.fire(
-                    'Cleared!',
-                    'All parsed data has been cleared.',
-                    'success'
-                );
+                Swal.fire('Cleared!', 'All parsed data has been cleared.', 'success');
             }
         });
+    }
+
+    function downloadFile(content, fileName, mimeType) {
+        const blob = new Blob([content], { type: mimeType });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = fileName;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
     }
 
     function exportMarkdown() {
         let md = "# Shopee Order Summary\n\n";
         md += "| No | Shop Name | Item Name | Total Order |\n";
-        md += "|:--:|:----------|:----------|:------------:|\n";
+        md += "|:---|:----------|:----------|:------------|\n";
         results.forEach((item, index) => {
-            md += `| ${index + 1} | ${item.shopName} | ${item.itemName.replace(/\|/g, '\\|')} | Rp${item.totalOrder.toLocaleString()} |\n`;
+            md += `| ${index + 1} | ${item.shopName.replace(/\|/g, '\\|')} | ${item.itemName.replace(/\|/g, '\\|')} | Rp${item.totalOrder.toLocaleString('id-ID')} |\n`;
         });
-
         const total = results.reduce((sum, item) => sum + item.totalOrder, 0);
-        md += `\n## Grand Total: Rp${total.toLocaleString()}\n`;
-        md += `\n_Generated on ${new Date().toLocaleString()}_\n`;
+        md += `\n**Grand Total: Rp${total.toLocaleString('id-ID')}**\n`;
 
-        const blob = new Blob([md], { type: 'text/markdown' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `shopee_orders_${new Date().toISOString().slice(0, 10)}.md`;
-        a.click();
-        URL.revokeObjectURL(url);
-
-        Swal.fire({
-            title: 'Export Complete',
-            text: 'Markdown file has been downloaded.',
-            icon: 'success',
-            timer: 2000,
-            timerProgressBar: true,
-            showConfirmButton: false
-        });
+        downloadFile(md, `shopee_orders_${new Date().toISOString().slice(0, 10)}.md`, 'text/markdown');
+        Swal.fire('Export Complete', 'Markdown file downloaded.', 'success');
     }
 
     function exportCSV() {
         let csv = 'No;Shop Name;Item Name;Total Order\n';
         results.forEach((item, index) => {
-            const cleanTotal = item.totalOrder;
-            csv += `"${index + 1}";"${item.shopName.replace(/"/g, '""')}";`;
-            csv += `"${item.itemName.replace(/"/g, '""')}";`;
-            csv += `"${cleanTotal}"\n`;
+            csv += `"${index + 1}";"${item.shopName.replace(/"/g, '""')}";"${item.itemName.replace(/"/g, '""')}";"${item.totalOrder}"\n`;
         });
-
-        // Grand total row
         const total = results.reduce((sum, item) => sum + item.totalOrder, 0);
-        csv += `;;Grand Total;"${total}"`;
+        csv += `\n;;Grand Total;"${total}"`;
 
-        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `shopee_orders_${new Date().toISOString().slice(0, 10)}.csv`;
-        a.click();
-        URL.revokeObjectURL(url);
-
-        Swal.fire({
-            title: 'Export Complete',
-            text: 'CSV file has been downloaded.',
-            icon: 'success',
-            timer: 2000,
-            timerProgressBar: true,
-            showConfirmButton: false
-        });
+        downloadFile('\uFEFF' + csv, `shopee_orders_${new Date().toISOString().slice(0, 10)}.csv`, 'text/csv;charset=utf-8;');
+        Swal.fire('Export Complete', 'CSV file downloaded.', 'success');
     }
 
     function saveToHistory() {
-        const date = new Date();
         const historyEntry = {
-            date: date.toISOString(),
+            date: new Date().toISOString(),
             results: [...results],
             totalAmount: results.reduce((sum, item) => sum + item.totalOrder, 0)
         };
 
-        const history = [...config.history];
+        let history = GM_getValue('parserHistory', []);
         history.unshift(historyEntry);
+        if (history.length > 20) history.pop();
 
-        // Limit history to 20 entries
-        if (history.length > 20) {
-            history.pop();
-        }
-
-        config.history = history;
         GM_setValue('parserHistory', history);
+        config.history = history;
 
         Swal.fire({
             title: 'Saved!',
             text: 'This order session has been saved to history.',
             icon: 'success',
             timer: 2000,
-            timerProgressBar: true,
-            showConfirmButton: false
+            showConfirmButton: false,
         });
     }
 
     function renderHistory() {
+        historyList.innerHTML = '';
         if (!config.history || config.history.length === 0) {
             historyList.innerHTML = `
                 <div class="empty-state">
-                    <i class="fa fa-history" aria-hidden="true"></i>
-                    <p>No saved order history yet.</p>
-                </div>
-            `;
+                    <i class="fas fa-history" aria-hidden="true"></i>
+                    <p>No saved order history found.</p>
+                </div>`;
             return;
         }
-        historyList.innerHTML = '';
+
         config.history.forEach((entry, index) => {
             const date = new Date(entry.date);
-            const formattedDate = date.toLocaleString();
-            const itemCount = entry.results.length;
             const historyItem = document.createElement('div');
             historyItem.className = 'history-item';
             historyItem.innerHTML = `
-                <div class="history-date">${formattedDate}</div>
-                <div style="display: flex; justify-content: space-between;">
-                    <div>${itemCount} items</div>
-                    <div>Total: <strong>Rp${entry.totalAmount.toLocaleString()}</strong></div>
-                </div>
-            `;
+                <div class="history-date">${date.toLocaleString()}</div>
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>${entry.results.length} items</div>
+                    <div>Total: <strong>Rp${entry.totalAmount.toLocaleString('id-ID')}</strong></div>
+                </div>`;
             historyItem.addEventListener('click', () => {
                 Swal.fire({
-                    title: `Order History - ${formattedDate}`,
-                    html: `
-                        <div style="text-align: left;">
-                            <p><strong>Items:</strong> ${itemCount}</p>
-                            <p><strong>Total:</strong> Rp${entry.totalAmount.toLocaleString()}</p>
-                        </div>
-                    `,
+                    title: `History: ${date.toLocaleDateString()}`,
+                    html: `Load ${entry.results.length} items from this session?`,
                     showCancelButton: true,
-                    confirmButtonText: 'Load This Data',
+                    confirmButtonText: 'Load Data',
                     cancelButtonText: 'Close',
                     showDenyButton: true,
-                    denyButtonText: 'Delete'
+                    denyButtonText: 'Delete',
+                    denyButtonColor: '#ef4444'
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        // Load this history data
                         results = [...entry.results];
                         updateUI();
                         updateRawOutput();
                         updateButtonStates(true);
-                                                // Switch to parser tab
-                        tabs.forEach(t => t.classList.remove('active'));
-                        tabContents.forEach(c => c.classList.remove('active'));
-                        tabs[0].classList.add('active');
-                        document.getElementById('parser-tab').classList.add('active');
-
+                        document.querySelector('.tab[data-tab="parser"]').click();
                         Swal.fire('Loaded!', 'Historical data has been loaded.', 'success');
                     } else if (result.isDenied) {
-                        // Delete this history entry
-                        Swal.fire({
-                            title: 'Delete this entry?',
-                            text: "You won't be able to revert this!",
-                            icon: 'warning',
-                            showCancelButton: true,
-                            confirmButtonText: 'Yes, delete it!'
-                        }).then((confirmResult) => {
-                            if (confirmResult.isConfirmed) {
-                                const history = [...config.history];
-                                history.splice(index, 1);
-                                config.history = history;
-                                GM_setValue('parserHistory', history);
-                                renderHistory();
-                                Swal.fire('Deleted!', 'History entry has been removed.', 'success');
-                            }
-                        });
+                        config.history.splice(index, 1);
+                        GM_setValue('parserHistory', config.history);
+                        renderHistory();
+                        Swal.fire('Deleted!', 'History entry has been removed.', 'success');
                     }
                 });
             });
@@ -1141,7 +1000,7 @@
         });
     }
 
-    // Event listeners
+    // Event listeners from original script
     parseBtn.addEventListener('click', parseAllOrders);
     calcBtn.addEventListener('click', calculateGrandTotal);
     cleanBtn.addEventListener('click', cleanResults);
@@ -1149,7 +1008,7 @@
     exportCsvBtn.addEventListener('click', exportCSV);
     saveBtn.addEventListener('click', saveToHistory);
 
-    // Keyboard shortcuts
+    // Keyboard shortcuts from original script
     window.addEventListener('keydown', e => {
         if (e.key === 'm' && e.ctrlKey) {
             e.preventDefault();
@@ -1160,7 +1019,11 @@
     });
 
     // Initialize UI
-    if (!config.autoShow) {
+    if (config.autoShow) {
+        parserUI.style.display = 'block';
+    } else {
         parserUI.style.display = 'none';
     }
+    applyTheme();
+    renderHistory();
 })();
