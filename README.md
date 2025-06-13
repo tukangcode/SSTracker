@@ -1,71 +1,88 @@
-# 🛍️ SSTracker – Shopee Spending Tracker (English edition)
+# 🛍️ SSTracker – Shopee Spending Tracker
 
-<div align="center">
-  <img src="image/shoope.png" alt="Shopee Screenshot" width="320" />
-</div>
-<div align="center">
-  <img src="image/indotech.png" alt="IndoTech Subreddit" width="320" />
-</div>
-
-
-> A lightweight Tampermonkey script to parse and track your spending on **Shopee Indonesia** (`shopee.co.id`).
-
-- for Indonesia Guide and translation here - [Go to Indonesian Version ↓](#versi-bahasa-indonesia)
+A modern, user-friendly Tampermonkey script to parse and track your spending on **Shopee Indonesia** (`shopee.co.id`).
 
 ---
 
-## 📌 What is This?
+## ✨ Features
 
-**SSTracker** is a browser script that helps you keep track of your purchases directly from **Shopee Indonesia** order pages. It parses visible items and provides:
-
-- ✅ Clean list of shop names, item names, and prices  
-- 💰 Grand total calculator  
-- 🗑️ Reset functionality  
-- 📄 Export options: Markdown (.md) and CSV (.csv)
-
-> ⚠️ *This tool does not record or modify any data on Shopee’s servers. All actions are performed locally in your browser.*
-
-### 🖼️ Interface Preview
-
-<div align="center">
-  <img src="image/image1.png" alt="Preview 1 - " width="400" />
-  <img src="image/image2.png" alt="Preview 2 - " width="400" />
-  <img src="image/image3.png" alt="Preview 3 - " width="400" />
-</div>
-
+- **Instant Order Parsing:** Extracts shop names, item names, and order totals from your Shopee order history page.
+- **Grand Total Calculator:** Instantly sums up your total spending on the current page.
+- **Export Options:** Download your parsed data as Markdown or CSV (Excel/Sheets-ready).
+- **History Tracking:** Save and revisit past parsing sessions.
+- **Modern UI/UX:** Clean, accessible, and responsive interface with dark mode support.
+- **Customizable Settings:** Toggle discounted price usage, auto-show panel, and more.
+- **Keyboard Shortcuts:** Quick access with `Ctrl+M` (toggle) and `Esc` (hide).
 
 ---
 
-## ✅ Benefits
+## 🆕 Recent Improvements
 
-- 🧮 Instantly calculate total spending on current page  
-- 📋 Copy/export parsed data with one click  
-- 🛠️ GUI settings: toggle discounted price use & auto-show panel  
-  
+- **UI/UX and Accessibility:**
+  - Improved color contrast, focus states, and keyboard navigation for better accessibility.
+  - Added ARIA roles and screen reader support for all interactive elements.
+  - Enhanced table and button styling for a modern, user-friendly experience.
+- **CSV Export for Excel/Sheets:**
+  - CSV export now uses a semicolon (;) as the separator for better compatibility with Excel/Sheets in many locales.
+  - The exported CSV columns now match the UI and Markdown export: No, Shop Name, Item Name, Total Order.
+  - The 'Total Order' column is numeric only (no currency symbol), so you can sum or calculate easily in Excel/Sheets.
+  - Grand total row is included at the end of the CSV export.
+- **General:**
+  - Improved error handling and reliability for parsing Shopee order pages.
+
+---
+
+## 🖼️ Screenshots
+
+<div align="center">
+  <img src="image/image1.png" alt="Main UI - Order Table" width="400" />
+  <p><em>Modern floating panel with parsed order table and export options</em></p>
+  <img src="image/image2.png" alt="Settings Panel" width="400" />
+  <p><em>Customizable settings and dark mode support</em></p>
+  <img src="image/image3.png" alt="History Feature" width="400" />
+  <p><em>Order history tracking and quick loading</em></p>
+</div>
+
+---
+
+## 📦 Installation & Usage
+
+1. **Install [Tampermonkey](https://www.tampermonkey.net/)** (or a compatible userscript manager).
+2. **Install the script:** [Greasy Fork - SSTracker](https://greasyfork.org/en/scripts/538963-shopee-advanced-order-parser-v3-5) or from the release page.
+3. **Go to your Shopee order history page.**
+4. **Click "Parse Orders"** in the floating panel at the top-right.
+5. **Use the available buttons to:**
+   - Calculate your total spending
+   - Export results (Markdown or CSV)
+   - Clean/reset the output
+   - Save/load order history
+   - Adjust settings (discount price, dark mode, etc.)
+
+💡 **Tip:** Press `Ctrl + M` to toggle the parser interface, or `Esc` to hide it.
 
 ---
 
 ## ⚠️ Limitations
 
-- ❗ Parses only what is currently **visible on screen**  so you need scroll the page down to show up shopping list 
-- 📍 Works and test only at **Shopee Indonesia** (`*.shopee.co.id`)  
-- 🧱 May break if Shopee changes layout/class names  
+- Parses only what is **currently visible on screen** (scroll to load more orders).
+- Works and tested only on **Shopee Indonesia** (`*.shopee.co.id`).
+- May break if Shopee changes their layout or class names.
 
 ---
 
-## 🧰 How to Use
+## 🛠️ Troubleshooting & FAQ
 
-1. 🔧 Install [Tampermonkey](https://www.tampermonkey.net/)  or similar extension  
-2. 📥 Install the script via [Greasy Fork - SSTracker](https://greasyfork.org/en/scripts/538963-shopee-advanced-order-parser-v3-5) or release page.
-3. 🛒 Visit any **Shopee order history page**  
-4. 🖥️ Click **"Parse Orders"** in the top-right floating panel  
-5. 📊 Use buttons to:
-   - Calculate total spending  
-   - Export results  
-   - Clean/reset the output
-   - Tick or untick Show Discount price or orginal price (default : discount) 
+**Q: Why does my CSV export show all data in one column in Excel?**
+- Your Excel may use a semicolon (;) as the default separator. This script now exports CSVs with semicolons for compatibility. If you still see all data in one column, use Excel's "Data > From Text/CSV" import and set the delimiter to semicolon.
 
-💡 Tip: Press `Ctrl + M` to toggle the parser interface visibility.
+**Q: Can I use this on Shopee outside Indonesia?**
+- This script is designed and tested for Shopee Indonesia only. Other regions may have different layouts.
+
+**Q: Why are some orders missing?**
+- The script only parses orders that are visible on the page. Scroll down to load more orders before parsing.
+
+**Q: How do I get the total in Excel?**
+- The 'Total Order' column is numeric. You can use Excel's SUM function to calculate the total.
 
 ---
 
@@ -77,7 +94,7 @@ MIT License – You're free to redistribute, modify, and share this script.
 
 ---
 
-<h2 id="versi-bahasa-indonesia">🇮🇩 Versi Bahasa Indonesia</h2>
+## 🇮🇩 Versi Bahasa Indonesia
 
 ---
 
