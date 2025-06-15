@@ -2,6 +2,8 @@
 
 A modern, user-friendly Tampermonkey script to parse and track your spending on **Shopee Indonesia** (`shopee.co.id`).
 
+🔗 **[Lihat Versi Bahasa Indonesia](#-versi-bahasa-indonesia)**
+
 ---
 
 ## ✨ Features
@@ -165,3 +167,10 @@ MIT License – You're free to redistribute, modify, and share this script.
 MIT License – Anda bebas membagikan, memodifikasi, dan menggunakan skrip ini.
 
 > ⚠️ Penulis tidak bertanggung jawab atas kerusakan atau penyalahgunaan. Gunakan sesuai risiko Anda sendiri.
+
+---
+
+## 🙏 Credits
+
+Special thanks to [pataanggs](https://github.com/pataanggs) for contributing to recent improvements and enhancements to this project.
+
