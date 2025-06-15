@@ -96,6 +96,13 @@ MIT License – You're free to redistribute, modify, and share this script.
 
 ---
 
+## 🙏 Credits
+
+Special thanks to [pataanggs](https://github.com/pataanggs) for contributing to recent improvements and enhancements to this project.
+
+
+---
+
 ## 🇮🇩 Versi Bahasa Indonesia
 
 ---
